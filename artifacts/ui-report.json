@@ -1,0 +1,284 @@
+{
+  "hudText": {
+    "requested": "3.40 m",
+    "legal": "3.40 m",
+    "applied": "3.36 m",
+    "status": "obstructed",
+    "visibility": "100%",
+    "near": "0",
+    "direction": "offset -9° yaw",
+    "tests": "10",
+    "candidates": "16",
+    "violations": "0",
+    "posActual": "(3.43, 2.32, -2.94)",
+    "scene": "Start room"
+  },
+  "overlayVisible": true,
+  "shots": {
+    "start": {
+      "position": [
+        -6.453523409345568,
+        2.3299847533485707,
+        3.20897544327942
+      ],
+      "target": [
+        -3.4,
+        1.45,
+        2
+      ],
+      "distance": 3.4,
+      "legalDistance": 3.4,
+      "requested": 3.4,
+      "status": "clear",
+      "visibility": 1,
+      "nearIntrusions": 0,
+      "hullFree": true,
+      "yawOffsetDeg": 0,
+      "phase": "steady",
+      "centreRay": {
+        "distance": 3.4,
+        "hit": null
+      },
+      "frames": 16,
+      "violations": 0,
+      "maxNearIntrusions": 0,
+      "minVisibility": 1
+    },
+    "corridor": {
+      "position": [
+        -2.8529508723893794e-16,
+        2.0742174338222563,
+        4.929611177994925
+      ],
+      "target": [
+        0,
+        1.45,
+        2.6
+      ],
+      "distance": 2.41179096219522,
+      "legalDistance": 2.41179096219522,
+      "requested": 4.4,
+      "status": "obstructed",
+      "visibility": 1,
+      "nearIntrusions": 0,
+      "hullFree": true,
+      "yawOffsetDeg": 0,
+      "phase": "steady",
+      "centreRay": {
+        "distance": 2.484662832984199,
+        "hit": "wall-south"
+      },
+      "frames": 49,
+      "violations": 0,
+      "maxNearIntrusions": 0,
+      "minVisibility": 1
+    },
+    "low": {
+      "position": [
+        -3.07832085215073e-16,
+        2.2726917853646444,
+        -1.7863602678797048
+      ],
+      "target": [
+        0,
+        1.45,
+        -4.3
+      ],
+      "distance": 2.6448452651526244,
+      "legalDistance": 3.0174929726171857,
+      "requested": 3.4,
+      "status": "obstructed",
+      "visibility": 1,
+      "nearIntrusions": 0,
+      "hullFree": true,
+      "yawOffsetDeg": 0,
+      "phase": "recovering",
+      "centreRay": {
+        "distance": 3.4,
+        "hit": null
+      },
+      "frames": 53,
+      "violations": 0,
+      "maxNearIntrusions": 0,
+      "minVisibility": 1
+    },
+    "corner": {
+      "position": [
+        -5.065071278216736,
+        2.9332815729997472,
+        -2.7952999643738215e-16
+      ],
+      "target": [
+        -0.5,
+        1.45,
+        0
+      ],
+      "distance": 4.8,
+      "legalDistance": 4.8,
+      "requested": 4.8,
+      "status": "clear",
+      "visibility": 1,
+      "nearIntrusions": 0,
+      "hullFree": true,
+      "yawOffsetDeg": 0,
+      "phase": "steady",
+      "centreRay": {
+        "distance": 4.8,
+        "hit": null
+      },
+      "frames": 69,
+      "violations": 0,
+      "maxNearIntrusions": 0,
+      "minVisibility": 1
+    },
+    "column": {
+      "position": [
+        6.700297952117982,
+        2.607676894431396,
+        -0.7485195898144434
+      ],
+      "target": [
+        3.7,
+        1.45,
+        -3.45
+      ],
+      "distance": 4.2,
+      "legalDistance": 4.2,
+      "requested": 4.2,
+      "status": "obstructed",
+      "visibility": 1,
+      "nearIntrusions": 0,
+      "hullFree": true,
+      "yawOffsetDeg": 48,
+      "phase": "steady",
+      "centreRay": {
+        "distance": 4.2,
+        "hit": null
+      },
+      "frames": 53,
+      "violations": 0,
+      "maxNearIntrusions": 0,
+      "minVisibility": 1
+    },
+    "drive": {
+      "position": [
+        1.5177848078754135,
+        2.180375556523957,
+        -0.70637678508739
+      ],
+      "target": [
+        -1.1516860844884942,
+        1.45,
+        -0.15510223553092958
+      ],
+      "distance": 2.821954451746965,
+      "legalDistance": 4.4,
+      "requested": 4.4,
+      "status": "obstructed",
+      "visibility": 1,
+      "nearIntrusions": 0,
+      "hullFree": true,
+      "yawOffsetDeg": 19,
+      "phase": "recovering",
+      "centreRay": {
+        "distance": 4.4,
+        "hit": null
+      },
+      "frames": 225,
+      "violations": 0,
+      "maxNearIntrusions": 0,
+      "minVisibility": 1
+    },
+    "zoomOut": {
+      "position": [
+        3.4994583584864047,
+        2.7268041040594904,
+        -1.1909653039765473
+      ],
+      "target": [
+        -1.1516860844884942,
+        1.45,
+        -0.15510223553092958
+      ],
+      "distance": 4.933192236891748,
+      "legalDistance": 6.5,
+      "requested": 6.5,
+      "status": "clear",
+      "visibility": 1,
+      "nearIntrusions": 0,
+      "hullFree": true,
+      "yawOffsetDeg": 0,
+      "phase": "recovering",
+      "centreRay": {
+        "distance": 6.5,
+        "hit": null
+      },
+      "frames": 293,
+      "violations": 0,
+      "maxNearIntrusions": 0,
+      "minVisibility": 1
+    },
+    "zoomIn": {
+      "position": [
+        -0.18692170862445912,
+        1.7088190451025207,
+        -0.20245623172869676
+      ],
+      "target": [
+        -1.1516860844884942,
+        1.45,
+        -0.15510223553092958
+      ],
+      "distance": 1,
+      "legalDistance": 1,
+      "requested": 1,
+      "status": "clear",
+      "visibility": 1,
+      "nearIntrusions": 0,
+      "hullFree": true,
+      "yawOffsetDeg": 0,
+      "phase": "steady",
+      "centreRay": {
+        "distance": 1,
+        "hit": null
+      },
+      "frames": 401,
+      "violations": 0,
+      "maxNearIntrusions": 0,
+      "minVisibility": 1
+    },
+    "afterStress": {
+      "position": [
+        3.4861969713843863,
+        2.3052851107205212,
+        -2.942295644117535
+      ],
+      "target": [
+        6.6,
+        1.45,
+        -3.6443548613449734
+      ],
+      "distance": 3.3045679091418263,
+      "legalDistance": 3.4,
+      "requested": 3.4,
+      "status": "obstructed",
+      "visibility": 1,
+      "nearIntrusions": 0,
+      "hullFree": true,
+      "yawOffsetDeg": -9,
+      "phase": "recovering",
+      "centreRay": {
+        "distance": 3.4,
+        "hit": null
+      },
+      "frames": 1217,
+      "violations": 0,
+      "maxNearIntrusions": 0,
+      "minVisibility": 1
+    }
+  },
+  "logs": [
+    "[debug] [vite] connecting...",
+    "[debug] [vite] connected."
+  ]
+}

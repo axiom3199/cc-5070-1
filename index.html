@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Room Camera · Volumetric Third-Person Controller</title>
+  <link rel="stylesheet" href="/src/ui/style.css" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="view"></canvas>
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <strong>ROOM CAMERA</strong>
+        <span class="sub">volume-swept third-person controller</span>
+      </div>
+      <div class="top-actions">
+        <button data-action="toggle-overlay" class="ghost active">Volume <kbd>V</kbd></button>
+        <button data-action="toggle-help" class="ghost">Help <kbd>H</kbd></button>
+        <button data-action="reset" class="ghost">Reset <kbd>R</kbd></button>
+      </div>
+    </header>
+
+    <aside class="panel left">
+      <section class="card">
+        <h2>Camera distance</h2>
+        <div class="slider-row">
+          <input type="range" min="0.8" max="6.5" step="0.05" value="3.4" data-control="distance" aria-label="Requested camera distance" />
+          <output data-hud="slider-distance">3.40 m</output>
+        </div>
+        <div class="bar">
+          <span class="bar-fill" data-hud="bar-fill"></span>
+          <span class="bar-mark" data-hud="bar-legal"></span>
+        </div>
+        <dl class="grid">
+          <dt>Requested</dt><dd data-hud="requested">—</dd>
+          <dt>Legal limit</dt><dd data-hud="legal">—</dd>
+          <dt>Applied</dt><dd data-hud="applied">—</dd>
+          <dt>Shortfall</dt><dd data-hud="error">—</dd>
+        </dl>
+        <p class="legend"><span class="sw sw-good"></span>applied <span class="sw sw-warn"></span>legal limit</p>
+      </section>
+
+      <section class="card">
+        <h2>View direction</h2>
+        <dl class="grid">
+          <dt>Ideal</dt><dd data-hud="direction">—</dd>
+          <dt>Yaw offset</dt><dd data-hud="yaw-offset">—</dd>
+          <dt>Pitch offset</dt><dd data-hud="pitch-offset">—</dd>
+          <dt>Target visible</dt><dd data-hud="visibility">—</dd>
+        </dl>
+      </section>
+
+      <section class="card" data-panel="near">
+        <h2>Volume &amp; near plane</h2>
+        <dl class="grid">
+          <dt>Near-plane intrusions</dt><dd data-hud="near">—</dd>
+          <dt>Hull legal</dt><dd data-hud="hull-free">—</dd>
+          <dt>Safety clamp</dt><dd data-hud="clamp-backoff">—</dd>
+          <dt>Emergency backoff</dt><dd data-hud="emergency">—</dd>
+          <dt>Volume boxes tested</dt><dd data-hud="tests">—</dd>
+          <dt>Candidate directions</dt><dd data-hud="candidates">—</dd>
+        </dl>
+        <p class="note" data-hud="center-ray">—</p>
+      </section>
+
+      <section class="card">
+        <h2>State</h2>
+        <dl class="grid">
+          <dt>Camera status</dt><dd><span class="hud-status" data-hud="status">—</span></dd>
+          <dt>Distance phase</dt><dd data-hud="phase">—</dd>
+          <dt>Blocking box</dt><dd data-hud="hit">—</dd>
+          <dt>Illegal frames</dt><dd data-hud="violations">0</dd>
+        </dl>
+        <p class="note" data-hud="fps">—</p>
+      </section>
+    </aside>
+
+    <aside class="panel right">
+      <section class="card">
+        <h2>Test scenes</h2>
+        <div class="scene-buttons">
+          <button data-scene="start" class="active">Start room</button>
+          <button data-scene="corridor">Narrow corridor</button>
+          <button data-scene="low">Low ceiling</button>
+          <button data-scene="corner">Wall-hug turn</button>
+          <button data-scene="column">Column occlusion</button>
+        </div>
+        <p class="note">Now: <span data-hud="scene">—</span> · <span data-hud="mode">—</span></p>
+      </section>
+
+      <section class="card">
+        <h2>Query vs. camera</h2>
+        <dl class="grid">
+          <dt>Camera position</dt><dd data-hud="pos-actual" class="mono">—</dd>
+          <dt>Desired position</dt><dd data-hud="pos-desired" class="mono">—</dd>
+          <dt>Look-at pivot</dt><dd data-hud="pos-legal" class="mono">—</dd>
+        </dl>
+        <p class="note">The overhead pane draws the actuated hull (near rectangle + rear shell), the desired pose (orange) and the sweep probes &mdash; full-volume samples, green free / red blocked. The main view keeps the sight lines so framing stays readable.</p>
+      </section>
+
+      <section class="card help" data-panel="help">
+        <h2>Controls</h2>
+        <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move (camera-relative)</p>
+        <p><kbd>Shift</kbd> sprint · <kbd>Space</kbd> hop</p>
+        <p>Drag to orbit · wheel to change distance</p>
+        <p><kbd>V</kbd> volume overlay · <kbd>R</kbd> reset</p>
+        <p class="note">Yellow lines sample camera→character visibility. The overhead pane draws the full hull, including the blue near-plane rectangle; the main view hides the hull because it encloses the lens.</p>
+      </section>
+    </aside>
+
+    <div class="stage-frame" data-hud="stage-frame">
+      <span class="stage-label">Overhead · query vs. actuated volume</span>
+      <span class="stage-note">hull green = legal · red = blocked</span>
+    </div>
+
+    <div class="toast" data-hud="toast" hidden></div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
