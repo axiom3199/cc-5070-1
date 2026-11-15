@@ -68,6 +68,13 @@
 <text x="191.79999999999998" y="447.79999999999995" text-anchor="middle" font-size="9" fill="#e6ecf6" fill-opacity="0.7">desk</text>
 <rect x="265.4" y="276.9" width="55.20000000000001" height="23" fill="#8a6f4a" fill-opacity="0.92" stroke="#0d1015" stroke-width="1"/>
 <text x="293" y="291.4" text-anchor="middle" font-size="9" fill="#e6ecf6" fill-opacity="0.7">bench</text>
+<rect x="559.8" y="139.82" width="101.20000000000003" height="11.95999999999999" fill="#8a6f4a" fill-opacity="0.92" stroke="#0d1015" stroke-width="1"/>
+<text x="610.4" y="148.79999999999998" text-anchor="middle" font-size="9" fill="#e6ecf6" fill-opacity="0.7">jitter-corner-x</text>
+<rect x="650.42" y="74.5" width="11.95999999999999" height="69" fill="#8a6f4a" fill-opacity="0.92" stroke="#0d1015" stroke-width="1"/>
+<text x="656.4" y="112" text-anchor="middle" font-size="9" fill="#e6ecf6" fill-opacity="0.7">jitter-corner-z</text>
+<rect x="598.9" y="256.65999999999997" width="69" height="8.279999999999987" fill="#7a5230" fill-opacity="0.9" stroke="#ffb545" stroke-width="1.5"/>
+<rect x="598.9" y="367.05999999999995" width="69" height="8.279999999999987" fill="#7a5230" fill-opacity="0.9" stroke="#ffb545" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="633.4" y="254.79999999999995" text-anchor="middle" font-size="9" fill="#ffb545">sliding-door sweep</text>
 <polyline points="251.6,435.59999999999997 389.59999999999997,435.59999999999997 389.59999999999997,316 389.59999999999997,205.6" fill="none" stroke="#5bc8ff" stroke-width="2" stroke-dasharray="5 4" stroke-opacity="0.9"/>
 <circle cx="251.6" cy="435.59999999999997" r="3" fill="#5bc8ff"/>
 <circle cx="389.59999999999997" cy="435.59999999999997" r="3" fill="#5bc8ff"/>

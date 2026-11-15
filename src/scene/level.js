@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { levelSpec } from '../core/levelSpec.js';
+import { levelSpec, dynamicDoors } from '../core/levelSpec.js';
 import { AABB, vec } from '../core/collision.js';
+import { DOOR_SPEC, buildDoorCollider, updateDoorCollider, doorCenterAt } from '../core/dynamicDoor.js';
 
 export { levelSpec };
 
@@ -46,11 +47,47 @@ export function buildInterior(scene, materials) {
     group.add(mesh);
   }
 
+  // Dynamic colliders: a real mesh plus a real AABB, both driven from the
+  // single deterministic time -> centre function in the door module.
+  const doors = [];
+  for (const id of dynamicDoors) {
+    if (id !== DOOR_SPEC.id) continue;
+    const mesh = new THREE.Mesh(
+      new THREE.BoxGeometry(DOOR_SPEC.size.x, DOOR_SPEC.size.y, DOOR_SPEC.size.z),
+      materials.door,
+    );
+    const c0 = doorCenterAt(0);
+    mesh.position.set(c0.x, c0.y, c0.z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.userData.kind = 'door';
+    mesh.userData.colliderId = id;
+    const edge = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 25), materials.doorEdge);
+    mesh.add(edge);
+    group.add(mesh);
+
+    const collider = buildDoorCollider();
+    colliders.push(collider);
+    doors.push({ id, mesh, collider });
+  }
+
   // Roofs are hidden by the overhead inspection view so the plan reads from
   // above; the main camera keeps them visible.
   const roofs = group.children.filter((m) => m.userData?.kind === 'ceiling');
 
-  return { colliders, group, roofs };
+  return { colliders, group, roofs, doors };
+}
+
+/** Advance every door to `timeSeconds`; returns the ids that actually moved. */
+export function updateDoors(doors, timeSeconds) {
+  const moved = new Set();
+  for (const door of doors) {
+    const id = updateDoorCollider(door.collider, timeSeconds);
+    if (id) moved.add(id);
+    const c = doorCenterAt(timeSeconds);
+    door.mesh.position.set(c.x, c.y, c.z);
+  }
+  return moved;
 }
 
 /** A path-following character proxy for deterministic camera scenarios. */

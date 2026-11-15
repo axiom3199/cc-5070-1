@@ -4,9 +4,14 @@
  * low-ceiling zones and a corner hugging route, the "tests" are meaningless.
  */
 import { buildColliders } from '../src/core/levelSpec.js';
+import { buildDoorCollider, doorCenterAt } from '../src/core/dynamicDoor.js';
 import fs from 'node:fs';
 
 const colliders = buildColliders();
+// Draw the sliding door at both travel extremes so the plan shows its sweep.
+const door = buildDoorCollider();
+const doorHalfOpen = doorCenterAt(0);
+const doorFullTravel = doorCenterAt(3);
 const scale = 46;
 const pad = 40;
 const minX = -7.6, maxX = 7.6, minZ = -8.6, maxZ = 5.4;
@@ -45,6 +50,18 @@ for (const b of colliders) {
     parts.push(`<text x="${x + ww / 2}" y="${z + hh / 2 + 3}" text-anchor="middle" font-size="9" fill="#e6ecf6" fill-opacity="0.7">${b.id}</text>`);
   }
 }
+
+// Sliding door: solid outline at the half-open pose, dashed outline at the
+// full-travel extreme, so the panel's sweep is legible on the plan.
+for (const [c, dashed] of [[doorHalfOpen, false], [doorFullTravel, true]]) {
+  const hw = (door.max.x - door.min.x) / 2;
+  const hz = (door.max.z - door.min.z) / 2;
+  parts.push(
+    `<rect x="${sx(c.x - hw)}" y="${sy(c.z - hz)}" width="${hw * 2 * scale}" height="${hz * 2 * scale}"`
+    + ` fill="#7a5230" fill-opacity="0.9" stroke="#ffb545" stroke-width="1.5"${dashed ? ' stroke-dasharray="5 4"' : ''}/>`,
+  );
+}
+parts.push(`<text x="${sx(doorHalfOpen.x)}" y="${sy(doorHalfOpen.z) - 6}" text-anchor="middle" font-size="9" fill="#ffb545">sliding-door sweep</text>`);
 
 // Character / camera routes from the headless scenario runs.
 const routes = [

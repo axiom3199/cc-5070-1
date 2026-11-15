@@ -77,6 +77,32 @@ kbd {
 .status-degraded { color: var(--bad); }
 .status-illegal { color: var(--bad); }
 
+/* Obstacle-jitter root-cause colours, shared by the HUD card and the
+   in-viewport banner. Each class only appears when the tracker confirmed an
+   event, so the colour always corresponds to observed evidence. */
+.reason-moving-blocker { color: #c79bff; }
+.reason-query-noise { color: var(--bad); }
+.reason-state-update { color: var(--warn); }
+.reason-geometry-infeasible { color: var(--near); }
+
+.diag-banner {
+  position: absolute; top: 64px; left: 50%; transform: translateX(-50%);
+  z-index: 6; display: flex; align-items: center; gap: 9px;
+  padding: 8px 15px; border-radius: 999px;
+  background: rgba(16, 19, 24, 0.92); border: 1px solid rgba(255, 181, 69, 0.45);
+  font-size: 12px; color: var(--ink); box-shadow: 0 12px 34px rgba(0, 0, 0, 0.4);
+  max-width: min(680px, 80vw);
+}
+.diag-banner[hidden] { display: none; }
+.diag-banner .diag-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 10px var(--warn); flex: none; }
+.diag-banner[data-reason="moving-blocker"] { border-color: rgba(199, 155, 255, 0.5); }
+.diag-banner[data-reason="moving-blocker"] .diag-dot { background: #c79bff; box-shadow: 0 0 10px #c79bff; }
+.diag-banner[data-reason="query-noise"] { border-color: rgba(255, 93, 118, 0.55); }
+.diag-banner[data-reason="query-noise"] .diag-dot { background: var(--bad); box-shadow: 0 0 10px var(--bad); }
+.diag-banner[data-reason="geometry-infeasible"] { border-color: rgba(91, 200, 255, 0.5); }
+.diag-banner[data-reason="geometry-infeasible"] .diag-dot { background: var(--near); box-shadow: 0 0 10px var(--near); }
+.diag-banner .diag-text { font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 .help p { margin: 3px 0; font-size: 11px; color: var(--muted); }
 .help kbd { margin-right: 2px; }
 

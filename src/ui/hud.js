@@ -34,6 +34,17 @@ export class Hud {
       mode: root.querySelector('[data-hud="mode"]'),
       centerRay: root.querySelector('[data-hud="center-ray"]'),
       near: root.querySelector('section[data-panel="near"]'),
+      diagReason: root.querySelector('[data-hud="diag-reason"]'),
+      diagBlocker: root.querySelector('[data-hud="diag-blocker"]'),
+      diagAmplitude: root.querySelector('[data-hud="diag-amplitude"]'),
+      diagKeyFlips: root.querySelector('[data-hud="diag-keyflips"]'),
+      diagReversals: root.querySelector('[data-hud="diag-reversals"]'),
+      diagEvents: root.querySelector('[data-hud="diag-events"]'),
+      diagTrace: root.querySelector('[data-hud="diag-trace"]'),
+      diagRaw: root.querySelector('[data-hud="diag-raw"]'),
+      diagPhase: root.querySelector('[data-hud="diag-phase"]'),
+      diagBanner: root.querySelector('[data-hud="diag-banner"]'),
+      diagBannerText: root.querySelector('[data-hud="diag-banner-text"]'),
     };
     this.stats = {
       frames: 0,
@@ -59,6 +70,41 @@ export class Hud {
   setSceneInfo(name, mode) {
     if (this.el.scene) this.el.scene.textContent = name;
     if (this.el.mode) this.el.mode.textContent = mode;
+  }
+
+  /**
+   * Render the obstacle-jitter evidence chain. Every value comes from the
+   * tracker's recorded frame/event data — the HUD never infers a reason, so
+   * it cannot display a cause the tracker did not observe.
+   */
+  updateDiagnostics(diag, summary) {
+    const { el } = this;
+    if (el.diagReason) {
+      el.diagReason.textContent = diag.jitterActive ? diag.activeLabel : 'none';
+      el.diagReason.className = diag.jitterActive
+        ? `hud-status status-diag reason-${diag.activeReason}`
+        : 'hud-status';
+    }
+    if (el.diagBlocker) el.diagBlocker.textContent = diag.hitId ?? '—';
+    if (el.diagAmplitude) el.diagAmplitude.textContent = `${(diag.requested - diag.applied).toFixed(2)} m`;
+    if (el.diagKeyFlips) el.diagKeyFlips.textContent = String(diag.keyFlips);
+    if (el.diagReversals) el.diagReversals.textContent = String(diag.distanceReversals);
+    if (el.diagEvents) el.diagEvents.textContent = String(summary.events);
+    if (el.diagTrace) {
+      el.diagTrace.textContent = `${summary.traceDepth}/${summary.traceCapacity} frames · ${summary.eventDepth}/${summary.eventCapacity} events`;
+    }
+    if (el.diagRaw) el.diagRaw.textContent = `${diag.raw.toFixed(2)} m`;
+    if (el.diagPhase) el.diagPhase.textContent = diag.phase;
+    if (el.diagBanner && el.diagBannerText) {
+      if (diag.jitterActive) {
+        el.diagBanner.hidden = false;
+        el.diagBanner.dataset.reason = diag.activeReason;
+        el.diagBannerText.textContent =
+          `${diag.activeLabel} · blocker ${diag.hitId ?? '—'} · shortfall ${diag.distanceGap.toFixed(2)} m · ${diag.phase}`;
+      } else {
+        el.diagBanner.hidden = true;
+      }
+    }
   }
 
   setSliderReadout(value) {

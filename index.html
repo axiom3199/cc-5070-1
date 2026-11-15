@@ -76,6 +76,22 @@
         </dl>
         <p class="note" data-hud="fps">—</p>
       </section>
+
+      <section class="card" data-panel="diagnostics">
+        <h2>Obstacle jitter diagnostics</h2>
+        <dl class="grid">
+          <dt>Active root cause</dt><dd><span class="hud-status" data-hud="diag-reason">none</span></dd>
+          <dt>Blocking evidence</dt><dd data-hud="diag-blocker">—</dd>
+          <dt>Raw contact distance</dt><dd data-hud="diag-raw">—</dd>
+          <dt>Distance phase</dt><dd data-hud="diag-phase">—</dd>
+          <dt>Distance shortfall</dt><dd data-hud="diag-amplitude">—</dd>
+          <dt>Candidate key flips</dt><dd data-hud="diag-keyflips">0</dd>
+          <dt>Distance reversals</dt><dd data-hud="diag-reversals">0</dd>
+          <dt>Confirmed events</dt><dd data-hud="diag-events">0</dd>
+        </dl>
+        <p class="note" data-hud="diag-trace">—</p>
+        <p class="note">Reasons: real infeasible geometry · moving blocker · collision query noise · camera state update. Each label is backed by the recorded evidence chain; collision is never disabled to smooth the picture.</p>
+      </section>
     </aside>
 
     <aside class="panel right">
@@ -87,6 +103,8 @@
           <button data-scene="low">Low ceiling</button>
           <button data-scene="corner">Wall-hug turn</button>
           <button data-scene="column">Column occlusion</button>
+          <button data-scene="jitter">Jitter corner</button>
+          <button data-scene="door">Moving door panel</button>
         </div>
         <p class="note">Now: <span data-hud="scene">—</span> · <span data-hud="mode">—</span></p>
       </section>
@@ -114,6 +132,11 @@
     <div class="stage-frame" data-hud="stage-frame">
       <span class="stage-label">Overhead · query vs. actuated volume</span>
       <span class="stage-note">hull green = legal · red = blocked</span>
+    </div>
+
+    <div class="diag-banner" data-hud="diag-banner" hidden>
+      <span class="diag-dot"></span>
+      <span class="diag-text" data-hud="diag-banner-text">—</span>
     </div>
 
     <div class="toast" data-hud="toast" hidden></div>

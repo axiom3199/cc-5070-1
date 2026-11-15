@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node tests/scenarios.js",
+    "test": "node tests/scenarios.js && node tests/diagnostics.js",
+    "test:kernel": "node tests/scenarios.js",
+    "test:diagnostics": "node tests/diagnostics.js",
+    "test:plan": "node tests/render-plan.mjs",
     "test:ui": "node tests/ui-smoke.mjs artifacts"
   },
   "repository": {

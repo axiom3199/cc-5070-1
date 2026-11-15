@@ -49,6 +49,12 @@ const BOXES = [
   ['desk', [-4.3, 0.38, 0.2], [1.8, 0.76, 0.9], 'prop', true, 'prop', true],
   ['bench', [-2.1, 0.24, -3.2], [1.2, 0.48, 0.5], 'prop', true, 'prop', true],
 
+  // Narrow L-shaped corner in the east room. The standing niche opens toward
+  // the room but pinches the camera's behind stand-off, so a slow orbit here
+  // makes the candidate fan alternate: a deterministic state-update case.
+  ['jitter-corner-x', [4.8, 1.25, -6.3], [2.2, 2.5, 0.26], 'prop', true, 'prop', true],
+  ['jitter-corner-z', [5.8, 1.25, -7.1], [0.26, 2.5, 1.5], 'prop', true, 'prop', true],
+
   // Skirting.
   ['skirting-north', [0, 0.05, -7.98], [13.6, 0.1, 0.06], 'trim', false, 'trim', false],
   ['skirting-south', [0, 0.05, 4.98], [13.6, 0.1, 0.06], 'trim', false, 'trim', false],
@@ -71,6 +77,11 @@ export const levelSpec = {
   })),
   panels: PANELS.map(([center, size]) => ({ center, size })),
 };
+
+// Dynamic colliders are specified separately from static boxes: buildInterior
+// and the headless harness both append them to the same collider list, and the
+// door module owns the time -> centre function.
+export const dynamicDoors = ['sliding-door'];
 
 export function buildColliders(spec = levelSpec) {
   const colliders = [];

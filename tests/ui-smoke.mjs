@@ -6,8 +6,8 @@ const outDir = process.argv[2] ?? 'artifacts';
 fs.mkdirSync(outDir, { recursive: true });
 
 process.env.PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = '1';
-const browser = await chromium.launch({
-  executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell`,
+const fallbackPath = `${process.env.HOME}/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell`;
+const launchOptions = {
   args: [
     '--no-sandbox',
     '--disable-dev-shm-usage',
@@ -23,7 +23,12 @@ const browser = await chromium.launch({
       process.env.LD_LIBRARY_PATH ?? '',
     ].join(':'),
   },
-});
+};
+// Allow a pinned executable via env; otherwise let Playwright resolve its own
+// installed browser so the suite is not tied to one cached build number.
+if (process.env.CHROMIUM_PATH) launchOptions.executablePath = process.env.CHROMIUM_PATH;
+else if (fs.existsSync(fallbackPath)) launchOptions.executablePath = fallbackPath;
+const browser = await chromium.launch(launchOptions);
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
 const logs = [];
 page.on('console', (m) => logs.push(`[${m.type()}] ${m.text()}`));
@@ -39,13 +44,51 @@ const shots = {};
 shots.start = await snapshot();
 await page.screenshot({ path: path.join(outDir, '01-start.png') });
 
-const scenes = ['corridor', 'low', 'corner', 'column'];
+const scenes = ['corridor', 'low', 'corner', 'column', 'jitter', 'door'];
 for (const name of scenes) {
   await page.click(`[data-scene="${name}"]`);
   await page.waitForTimeout(900);
   shots[name] = await snapshot();
   await page.screenshot({ path: path.join(outDir, `02-${name}.png`) });
 }
+
+// Diagnostic evidence through the real UI: the door scene must produce a
+// moving-blocker event and the jitter corner a state-update event, both from
+// the tracker the page actually runs (no collision disabling).
+await page.click('[data-scene="door"]');
+await page.waitForTimeout(4200);
+const doorDiag = await page.evaluate(() => {
+  const snap = window.__roomCamera.snapshot();
+  const banner = document.querySelector('[data-hud="diag-banner"]');
+  return {
+    summary: snap.diagnosticsSummary,
+    current: snap.diagnostics,
+    bannerHidden: banner.hidden,
+    bannerReason: banner.dataset.reason,
+    replayFrames: JSON.parse(window.__roomCamera.replayJSON).records.length,
+  };
+});
+shots.doorDiag = doorDiag;
+
+await page.click('[data-scene="jitter"]');
+await page.waitForTimeout(4200);
+const jitterDiag = await page.evaluate(() => {
+  const snap = window.__roomCamera.snapshot();
+  const banner = document.querySelector('[data-hud="diag-banner"]');
+  return {
+    summary: snap.diagnosticsSummary,
+    current: snap.diagnostics,
+    bannerHidden: banner.hidden,
+    bannerReason: banner.dataset.reason,
+  };
+});
+shots.jitterDiag = jitterDiag;
+
+// The clean start room must not false-report after a settle period.
+await page.click('[data-scene="start"]');
+await page.waitForTimeout(2500);
+const cleanDiag = await page.evaluate(() => window.__roomCamera.snapshot().diagnosticsSummary);
+shots.cleanDiag = cleanDiag;
 
 // Drive the character with WASD through the corridor, then a wall-hug turn.
 await page.click('[data-scene="corridor"]');
@@ -108,8 +151,27 @@ const result = {
   hudText,
   overlayVisible,
   shots,
+  assertions: {
+    doorMovingBlocker:
+      doorDiag.summary.reasonCounts?.['moving-blocker'] >= 1
+      && doorDiag.bannerReason === 'moving-blocker'
+      && doorDiag.bannerHidden === false
+      && doorDiag.replayFrames > 100,
+    jitterStateUpdate:
+      jitterDiag.summary.reasonCounts?.['state-update'] >= 1
+      && jitterDiag.bannerReason === 'state-update',
+    cleanRoomNoFalseReport: (cleanDiag.events ?? 0) === 0,
+    traceBounded:
+      doorDiag.summary.traceDepth <= doorDiag.summary.traceCapacity,
+  },
   logs: logs.filter((l) => !l.includes('[log]') || l.includes('error')),
 };
 fs.writeFileSync(path.join(outDir, 'ui-report.json'), JSON.stringify(result, null, 2));
+const failedAssertions = Object.entries(result.assertions).filter(([, ok]) => !ok);
+if (failedAssertions.length) {
+  console.error('UI diagnostic assertions failed:', failedAssertions);
+  process.exit(1);
+}
+console.log(JSON.stringify(result.assertions, null, 2));
 console.log(JSON.stringify(result, null, 2));
 await browser.close();

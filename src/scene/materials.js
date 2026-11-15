@@ -14,6 +14,10 @@ export function createMaterials() {
     skin: new THREE.MeshStandardMaterial({ color: 0xd8a17a, roughness: 0.7 }),
     cloth: new THREE.MeshStandardMaterial({ color: 0x3d6f8e, roughness: 0.8 }),
     accent: new THREE.MeshStandardMaterial({ color: 0xe0a34c, roughness: 0.5, emissive: 0x5a3a10, emissiveIntensity: 0.6 }),
+    // The sliding door reads distinctly from static props so the moving
+    // blocker is obvious while the demo runs.
+    door: new THREE.MeshStandardMaterial({ color: 0x8a5a3c, roughness: 0.55, metalness: 0.12 }),
+    doorEdge: new THREE.LineBasicMaterial({ color: 0xffb545, transparent: true, opacity: 0.85 }),
   };
 }
 

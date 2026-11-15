@@ -2,7 +2,9 @@ import * as THREE from 'three';
 import { ThirdPersonCamera } from './core/thirdPersonCamera.js';
 import { CameraVolume, clamp, vec } from './core/collision.js';
 import { levelSpec } from './core/levelSpec.js';
-import { buildInterior } from './scene/level.js';
+import { ObstacleJitterTracker, ReplayTrajectory } from './core/diagnostics.js';
+import { DOOR_SPEC, doorStateMap } from './core/dynamicDoor.js';
+import { buildInterior, updateDoors } from './scene/level.js';
 import { createMaterials, createOverlayMaterials } from './scene/materials.js';
 import { Avatar } from './scene/avatar.js';
 import { CameraOverlay } from './scene/overlay.js';
@@ -29,11 +31,19 @@ const BASE_FOV = 62;
 const camera = new THREE.PerspectiveCamera(BASE_FOV, window.innerWidth / window.innerHeight, 0.1, 60);
 const materials = createMaterials();
 const overlayMats = createOverlayMaterials();
-const { colliders, roofs } = buildInterior(scene, materials);
+const { colliders, roofs, doors } = buildInterior(scene, materials);
 const avatar = new Avatar(scene, materials);
 const overlay = new CameraOverlay(scene, overlayMats);
 const stage = new StageView({ span: 5.4, margin: 18 });
 const stageFrame = document.querySelector('[data-hud="stage-frame"]');
+
+// Observational diagnostics only: the tracker never feeds back into the
+// kernel, and the replay buffer is ring-bounded so long sessions stay cheap.
+const jitterTracker = new ObstacleJitterTracker();
+const replay = new ReplayTrajectory({ capacity: 1800, dynamicBoxes: [{ id: DOOR_SPEC.id }] });
+let doorClock = 0;
+let doorMotionEnabled = true;
+let lastDynamicIds = new Set();
 
 function sizeStage() {
   const rect = stageFrame.getBoundingClientRect();
@@ -101,6 +111,7 @@ let jumpOffset = 0;
 let jumpVelocity = 0;
 let dragging = false;
 let lastPointer = { x: 0, y: 0 };
+let autoOrbit = false;
 const toastEl = document.querySelector('[data-hud="toast"]');
 let toastTimer = 0;
 
@@ -185,7 +196,13 @@ function resetAll() {
   cameraYaw = orbitYaw;
   jumpOffset = 0;
   jumpVelocity = 0;
+  doorClock = 0;
+  doorMotionEnabled = false;
+  autoOrbit = false;
   kernel.reset();
+  jitterTracker.reset();
+  replay.reset();
+  updateDoors(doors, doorClock);
   hud.resetStats();
   showToast('Character and stats reset');
 }
@@ -210,6 +227,12 @@ const presets = {
   // other side of it, so "straight behind" is genuinely blocked and the fan
   // has to swing around the column.
   column: { pos: [3.7, 0, -3.45], yaw: Math.PI, viewYaw: Math.PI, pitch: 16 * DEG, distance: 4.2, label: 'Column occlusion' },
+  // Stationary character inside the L-shaped corner props: a slow orbit makes
+  // the candidate fan alternate against static geometry (state-update case).
+  jitter: { pos: [4.5, 0, -5.6], yaw: Math.PI, viewYaw: Math.PI, pitch: 16 * DEG, distance: 4.2, label: 'Jitter corner', autoOrbit: true },
+  // Stationary character on the sliding door's stand-off line. The panel
+  // crosses the camera sweep on its own clock (moving-blocker case).
+  door: { pos: [5.3, 0, -0.8], yaw: 0, viewYaw: 0, pitch: 14 * DEG, distance: 4.2, label: 'Moving door panel', doorMotion: true },
 };
 
 function applyPreset(name) {
@@ -221,12 +244,18 @@ function applyPreset(name) {
   cameraYaw = orbitYaw;
   jumpOffset = 0;
   jumpVelocity = 0;
+  autoOrbit = !!p.autoOrbit;
+  doorMotionEnabled = !!p.doorMotion;
+  doorClock = 0;
+  updateDoors(doors, doorClock);
   // Set the requested distance BEFORE resetting, otherwise the reset seeds the
   // smoothed distance from the previous scene's value and the new scene opens
   // mid-zoom.
   kernel.setRequestedDistance(p.distance);
   setRequestedDistance(p.distance);
   kernel.reset();
+  jitterTracker.reset();
+  replay.reset();
   hud.resetStats();
   document.querySelectorAll('[data-scene]').forEach((b) => b.classList.toggle('active', b.dataset.scene === name));
   hud.setSceneInfo(p.label, 'interactive');
@@ -285,13 +314,25 @@ function stepKernel(dt) {
 
   // The camera orbit yaw follows the mouse; when the player does not orbit,
   // it eases toward the actor's facing so "behind the character" is stable.
-  if (!dragging) {
+  // The jitter-corner preset drives a slow automatic orbit to make the
+  // candidate fan alternate against static geometry.
+  if (autoOrbit && !dragging) orbitYaw += dt * 0.9;
+  if (!dragging && !autoOrbit) {
     let delta = actorYaw - orbitYaw;
     while (delta > Math.PI) delta -= Math.PI * 2;
     while (delta < -Math.PI) delta += Math.PI * 2;
     orbitYaw += delta * (1 - Math.exp(-dt / 0.35));
   }
   cameraYaw = orbitYaw;
+
+  // Advance the sliding door on its deterministic clock. Collision stays
+  // fully enabled: the panel's AABB moves with the mesh in the same list.
+  if (doorMotionEnabled) {
+    doorClock += dt;
+    lastDynamicIds = updateDoors(doors, doorClock);
+  } else {
+    lastDynamicIds = new Set();
+  }
 
   // Jump is a cosmetic vertical offset on the avatar only; the camera pivot
   // follows it partially so the framing stays stable indoors.
@@ -322,8 +363,21 @@ function stepKernel(dt) {
   });
   const queryMs = performance.now() - before;
 
+  // Observational evidence chain: candidate key, legal/raw/applied distance,
+  // blocking box and phase are recorded every fixed step. Nothing here feeds
+  // back into the kernel — collision and smoothing run untouched.
+  const diag = jitterTracker.record(result, { pivot, yaw: orbitYaw, dt, dynamicIds: lastDynamicIds });
+  replay.recordFrame(result, {
+    pivot,
+    yaw: orbitYaw,
+    pitch: orbitPitch,
+    dt,
+    doorStates: doorMotionEnabled ? doorStateMap(doorClock) : null,
+  });
+
   syncCamera(result);
   hud.update(result, queryMs);
+  hud.updateDiagnostics(diag, jitterTracker.summary());
 
   if (hud.el['bar-fill']) {
     hud.el['bar-fill'].style.width = `${(result.distance / kernel.config.maxDistance) * 100}%`;
@@ -385,6 +439,11 @@ window.__roomCamera = {
   presets,
   applyPreset,
   setRequestedDistance,
+  jitterTracker,
+  get replayJSON() { return JSON.stringify(replay.toJSON()); },
+  get lastDiagnostics() { return jitterTracker.current; },
+  get doorClock() { return doorClock; },
+  get doors() { return doors; },
   get lastResult() { return lastResult; },
   step(dt = 1 / 60, n = 1) {
     for (let i = 0; i < n; i++) stepKernel(dt);
@@ -409,6 +468,8 @@ window.__roomCamera = {
       violations: hud.stats.violations,
       maxNearIntrusions: hud.stats.maxNearIntrusions,
       minVisibility: hud.stats.minVisibility,
+      diagnostics: jitterTracker.current,
+      diagnosticsSummary: jitterTracker.summary(),
     };
   },
 };
